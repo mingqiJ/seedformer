@@ -32,7 +32,7 @@ The code has been tested on one configuration:
 - open3d
 
 ```
-conda install pytorch==1.8.1 torchvision==0.9.1 torchaudio==0.8.1 cudatoolkit=11.3 -c pytorch -c conda-forge
+conda install pytorch==1.8.1 torchvision==0.9.1 torchaudio==0.8.1 cudatoolkit=10.2 -c pytorch -c hcc
 pip install --upgrade pip setuptools wheel
 pip install -r requirements.txt
 
