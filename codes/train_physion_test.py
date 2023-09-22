@@ -40,6 +40,7 @@ parser.add_argument('--net_model', type=str, default='model', help='Import modul
 parser.add_argument('--arch_model', type=str, default='seedformer_dim128', help='Model to use.')
 parser.add_argument('--test', dest='test', help='Test neural networks', action='store_true')
 parser.add_argument('--inference', dest='inference', help='Inference for benchmark', action='store_true')
+parser.add_argument('--norm', type=int, default=False, help='Using norm.')
 parser.add_argument('--output', type=int, default=False, help='Output testing results.')
 parser.add_argument('--pretrained', type=str, default='', help='Pretrained path for testing.')
 parser.add_argument('--mode', type=str, default='median', help='Testing mode [easy, median, hard].')
@@ -60,17 +61,17 @@ def ShapeNet55Config():
     #
     __C.DATASETS                                     = edict()
     __C.DATASETS.SHAPENET55                          = edict()
-    __C.DATASETS.SHAPENET55.CATEGORY_FILE_PATH       = './datasets/ShapeNet55-34/ShapeNet-55/'
+    __C.DATASETS.SHAPENET55.CATEGORY_FILE_PATH       = './train_set/physion_test_txt/'
     __C.DATASETS.SHAPENET55.N_POINTS                 = 2048
-    __C.DATASETS.SHAPENET55.COMPLETE_POINTS_PATH     = './ShapeNet55/shapenet_pc/%s'
+    __C.DATASETS.SHAPENET55.COMPLETE_POINTS_PATH     = './train_set/physion_test_pc/%s'
 
     #
     # Dataset
     #
     __C.DATASET                                      = edict()
     # Dataset Options: Completion3D, ShapeNet, ShapeNetCars, Completion3DPCCT
-    __C.DATASET.TRAIN_DATASET                        = 'ShapeNet55'
-    __C.DATASET.TEST_DATASET                         = 'ShapeNet55'
+    __C.DATASET.TRAIN_DATASET                        = 'Physion_test'
+    __C.DATASET.TEST_DATASET                         = 'Physion_test'
 
     #
     # Constants
@@ -133,8 +134,8 @@ def train_net(cfg):
     # Load Train/Val Dataset
     ########################
 
-    train_dataset_loader = utils.data_loaders.DATASET_LOADER_MAPPING[cfg.DATASET.TRAIN_DATASET](cfg)
-    val_dataset_loader = utils.data_loaders.DATASET_LOADER_MAPPING[cfg.DATASET.TEST_DATASET](cfg)
+    train_dataset_loader = utils.data_loaders.DATASET_LOADER_MAPPING[cfg.DATASET.TRAIN_DATASET](cfg, args.norm)
+    val_dataset_loader = utils.data_loaders.DATASET_LOADER_MAPPING[cfg.DATASET.TEST_DATASET](cfg, args.norm)
 
     train_data_loader = torch.utils.data.DataLoader(dataset=train_dataset_loader.get_dataset(
         utils.data_loaders.DatasetSubset.TRAIN),
@@ -206,7 +207,7 @@ def test_net(cfg):
     # Load Train/Val Dataset
     ########################
 
-    test_dataset_loader = utils.data_loaders.DATASET_LOADER_MAPPING[cfg.DATASET.TEST_DATASET](cfg)
+    test_dataset_loader = utils.data_loaders.DATASET_LOADER_MAPPING[cfg.DATASET.TEST_DATASET](cfg, args.norm)
 
     val_data_loader = torch.utils.data.DataLoader(dataset=test_dataset_loader.get_dataset(
         utils.data_loaders.DatasetSubset.TEST),

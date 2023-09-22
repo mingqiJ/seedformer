@@ -462,7 +462,7 @@ class ShapeNet55Dataset(torch.utils.data.dataset.Dataset):
             file_path = sample['%s_path' % ri]
             data[ri] = IO.get(file_path).astype(np.float32)
             # shapenet55
-            data[ri] = self.pc_norm(data[ri])
+            # data[ri] = self.pc_norm(data[ri])
             data[ri] = torch.from_numpy(data[ri]).float()
 
         if self.transforms is not None:
@@ -521,6 +521,190 @@ class ShapeNet55DataLoader(object):
               len(file_list))
         return file_list
 
+class Kubric_movi_a_Dataset(torch.utils.data.dataset.Dataset):
+    """
+    ShapeNet55 dataset: return complete clouds, partial clouds are generated online
+    """
+    def __init__(self, options, file_list, transforms=None):
+        self.options = options
+        self.file_list = file_list
+        self.transforms = transforms
+        self.cache = dict()
+
+    def __len__(self):
+        return len(self.file_list)
+
+    def pc_norm(self, pc):
+        """ pc: NxC, return NxC """
+        centroid = np.mean(pc, axis=0)
+        pc = pc - centroid
+        m = np.max(np.sqrt(np.sum(pc**2, axis=1)))
+        pc = pc / m
+        return pc, centroid, m
+
+    def __getitem__(self, idx):
+        sample = self.file_list[idx]
+        data = {}
+
+        for ri in self.options['required_items']:
+            file_path = sample['%s_path' % ri]
+            data[ri] = IO.get(file_path).astype(np.float32)
+            # shapenet55
+            # if ri =='gtcloud':
+            #     data[ri], centroid, m = self.pc_norm(data[ri])
+            # else:
+            #     data[ri]=(data[ri]- centroid)/m
+            data[ri] = torch.from_numpy(data[ri]).float()
+
+        if self.transforms is not None:
+            data = self.transforms(data)
+
+        return sample['taxonomy_id'], sample['model_id'], data
+
+
+class Kubric_movi_a_DataLoader(object):
+    """
+    ShapeNet55: get dataset file list
+    """
+    def __init__(self, cfg):
+        self.cfg = cfg
+
+    def get_dataset(self, subset):
+        file_list = self._get_file_list(self.cfg, self._get_subset(subset))
+        transforms = None
+        return Kubric_movi_a_Dataset(
+            {
+                'required_items': ['gtcloud','partial_cloud'],
+                'shuffle': subset == DatasetSubset.TRAIN
+            }, file_list, transforms)
+
+    def _get_subset(self, subset):
+        if subset == DatasetSubset.TRAIN:
+            return 'train'
+        else:
+            return 'test'
+
+    def _get_file_list(self, cfg, subset):
+        """Prepare file list for the dataset"""
+
+        # Load the dataset indexing file
+        with open(
+                os.path.join(cfg.DATASETS.SHAPENET55.CATEGORY_FILE_PATH,
+                             subset + '.txt'), 'r') as f:
+            lines = f.readlines()
+
+        # Collect file list
+        file_list = []
+        for line in lines:
+            line = line.strip()
+            taxonomy_id = line.split('-')[0]
+            model_id = line.split('-')[1].split('.')[0]
+            file_list.append({
+                'taxonomy_id':
+                taxonomy_id,
+                'model_id':
+                model_id,
+                'partial_cloud_path':
+                (cfg.DATASETS.SHAPENET55.COMPLETE_POINTS_PATH % (line)).replace('complete', 'partial'),
+                'gtcloud_path':
+                cfg.DATASETS.SHAPENET55.COMPLETE_POINTS_PATH % (line),
+            })
+
+        print('Complete collecting files of the dataset. Total files: %d' %
+              len(file_list))
+        return file_list
+
+
+class Physion_test_Dataset(torch.utils.data.dataset.Dataset):
+    """
+    ShapeNet55 dataset: return complete clouds, partial clouds are generated online
+    """
+    def __init__(self, options, file_list, norm = True, transforms=None):
+        self.options = options
+        self.file_list = file_list
+        self.norm = norm
+        self.transforms = transforms
+        self.cache = dict()
+
+    def __len__(self):
+        return len(self.file_list)
+
+    def pc_norm(self, pc):
+        """ pc: NxC, return NxC """
+        centroid = np.mean(pc, axis=0)
+        pc = pc - centroid
+        m = np.max(np.sqrt(np.sum(pc**2, axis=1)))
+        pc = pc / m
+        return pc
+
+    def __getitem__(self, idx):
+        sample = self.file_list[idx]
+        data = {}
+
+        for ri in self.options['required_items']:
+            file_path = sample['%s_path' % ri]
+            data[ri] = IO.get(file_path).astype(np.float32)
+            if self.norm:
+                data[ri] = self.pc_norm(data[ri])
+            data[ri] = torch.from_numpy(data[ri]).float()
+
+        if self.transforms is not None:
+            data = self.transforms(data)
+
+        return sample['taxonomy_id'], sample['model_id'], data
+
+
+class Physion_test_DataLoader(object):
+    """
+    ShapeNet55: get dataset file list
+    """
+    def __init__(self, cfg, norm = True):
+        self.cfg = cfg
+        self.norm = norm
+
+    def get_dataset(self, subset):
+        file_list = self._get_file_list(self.cfg, self._get_subset(subset))
+        transforms = None
+        return Physion_test_Dataset(
+            {
+                'required_items': ['gtcloud'],
+                'shuffle': subset == DatasetSubset.TRAIN
+            }, file_list, self.norm, transforms)
+
+    def _get_subset(self, subset):
+        if subset == DatasetSubset.TRAIN:
+            return 'train'
+        else:
+            return 'test'
+
+    def _get_file_list(self, cfg, subset):
+        """Prepare file list for the dataset"""
+
+        # Load the dataset indexing file
+        with open(
+                os.path.join(cfg.DATASETS.SHAPENET55.CATEGORY_FILE_PATH,
+                             subset + '.txt'), 'r') as f:
+            lines = f.readlines()
+
+        # Collect file list
+        file_list = []
+        for line in lines:
+            line = line.strip()
+            taxonomy_id = line.split('-')[0]
+            model_id = line.split('-')[1].split('.')[0]
+            file_list.append({
+                'taxonomy_id':
+                taxonomy_id,
+                'model_id':
+                model_id,
+                'gtcloud_path':
+                cfg.DATASETS.SHAPENET55.COMPLETE_POINTS_PATH % (line),
+            })
+
+        print('Complete collecting files of the dataset. Total files: %d' %
+              len(file_list))
+        return file_list
+
 
 # //////////////////////////////////////////// = Dataset Loader Mapping = //////////////////////////////////////////// #
 
@@ -531,4 +715,6 @@ DATASET_LOADER_MAPPING = {
     'ShapeNetCars': ShapeNetCarsDataLoader,
     'KITTI': KittiDataLoader,
     'ShapeNet55': ShapeNet55DataLoader,
+    'Kubric_movi_a': Kubric_movi_a_DataLoader,
+    'Physion_test': Physion_test_DataLoader,
 }  # yapf: disable

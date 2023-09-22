@@ -60,17 +60,17 @@ def ShapeNet55Config():
     #
     __C.DATASETS                                     = edict()
     __C.DATASETS.SHAPENET55                          = edict()
-    __C.DATASETS.SHAPENET55.CATEGORY_FILE_PATH       = './complete_train_set/kubric_movi_a_txt/'
+    __C.DATASETS.SHAPENET55.CATEGORY_FILE_PATH       = './train_set/kubric_movi_a_depth_txt/'
     __C.DATASETS.SHAPENET55.N_POINTS                 = 2048
-    __C.DATASETS.SHAPENET55.COMPLETE_POINTS_PATH     = './complete_train_set/kubric_movi_a_pc/%s'
+    __C.DATASETS.SHAPENET55.COMPLETE_POINTS_PATH     = './train_set/kubric_movi_a_depth_complete_pc/%s'
 
     #
     # Dataset
     #
     __C.DATASET                                      = edict()
     # Dataset Options: Completion3D, ShapeNet, ShapeNetCars, Completion3DPCCT
-    __C.DATASET.TRAIN_DATASET                        = 'ShapeNet55'
-    __C.DATASET.TEST_DATASET                         = 'ShapeNet55'
+    __C.DATASET.TRAIN_DATASET                        = 'Kubric_movi_a'
+    __C.DATASET.TEST_DATASET                         = 'Kubric_movi_a'
 
     #
     # Constants

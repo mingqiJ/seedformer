@@ -119,3 +119,15 @@ def seprate_point_cloud(xyz,
     crop_data = torch.cat(CROP, dim=0)  # B M 3
 
     return input_data.contiguous(), crop_data.contiguous()
+
+def up_sample(pc, num):
+
+    new_pc = torch.cat([pc]+[pc[:,random.randint(0,pc.shape[1]-1),:].unsqueeze(1) for _ in range(num - pc.shape[1])], axis=1)
+    
+    return new_pc
+
+def down_sample(pc, num):
+
+    new_pc = torch.cat([pc[:,random.randint(0,pc.shape[1]-1),:].unsqueeze(1) for _ in range(num)], axis=1)
+    
+    return new_pc
