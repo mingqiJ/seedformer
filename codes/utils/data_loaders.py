@@ -667,7 +667,7 @@ class Physion_test_DataLoader(object):
         transforms = None
         return Physion_test_Dataset(
             {
-                'required_items': ['gtcloud'],
+                'required_items': ['gtcloud','partial_cloud'],
                 'shuffle': subset == DatasetSubset.TRAIN
             }, file_list, self.norm, transforms)
 
@@ -697,6 +697,8 @@ class Physion_test_DataLoader(object):
                 taxonomy_id,
                 'model_id':
                 model_id,
+                'partial_cloud_path':
+                (cfg.DATASETS.SHAPENET55.COMPLETE_POINTS_PATH % (line)).replace('complete', 'partial'),
                 'gtcloud_path':
                 cfg.DATASETS.SHAPENET55.COMPLETE_POINTS_PATH % (line),
             })
