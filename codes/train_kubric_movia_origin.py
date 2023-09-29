@@ -60,9 +60,9 @@ def ShapeNet55Config():
     #
     __C.DATASETS                                     = edict()
     __C.DATASETS.SHAPENET55                          = edict()
-    __C.DATASETS.SHAPENET55.CATEGORY_FILE_PATH       = './complete_train_set/kubric_movi_a_txt/'
+    __C.DATASETS.SHAPENET55.CATEGORY_FILE_PATH       = './train_set/kubric_movi_a_txt/'
     __C.DATASETS.SHAPENET55.N_POINTS                 = 2048
-    __C.DATASETS.SHAPENET55.COMPLETE_POINTS_PATH     = './complete_train_set/kubric_movi_a_pc/%s'
+    __C.DATASETS.SHAPENET55.COMPLETE_POINTS_PATH     = './train_set/kubric_movi_a_pc/%s'
 
     #
     # Dataset
